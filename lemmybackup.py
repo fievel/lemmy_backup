@@ -2,6 +2,12 @@ import plemmy
 import os
 import json
 import sys
+import logging
+import io
+
+class NullOutput(io.IOBase):
+    def write(self, line):
+        pass
 
 class LemmyReader:
     def __init__(self, instanceUrl, login, password):
@@ -59,6 +65,10 @@ def getArgParser():
                         action='store',
                         type=str)
 
+    parser.add_argument("-q", "--quiet",
+                        help="Do not output on console",
+                        action="store_true")
+
     backup_data_group = parser.add_argument_group("Backup Data", "Data to backup (if none specified, all will be saved)")
     backup_data_group.add_argument("--communities",
                         help="Backup subscribed communities",
@@ -70,6 +80,7 @@ def getArgParser():
 
     return parser
 
+
 def main():
     args = getArgParser().parse_args()
 
@@ -77,12 +88,15 @@ def main():
         args.communities = True
         args.profile = True
 
+    ostrm = sys.stdout if not args.quiet else NullOutput()
+
+
     backupData = dict()
 
     try:
         lr = LemmyReader(args.instance, args.username, args.password)
     except:
-        print("ERROR: Cannot connect to Lemmy, check your credentials and instance URL")
+        logging.error("Cannot connect to Lemmy, check your credentials and instance URL")
         sys.exit(1)
 
     if args.profile:
@@ -90,25 +104,25 @@ def main():
 
         backupData["profile"] = {"name": profile.name, "bio": profile.bio}
 
-        print("\nCurrent user:")
-        print("-------------")
-        print("Login: {login}".format(login=profile.name))
-        print("\nBio:\n")
-        print(profile.bio)
+        print("\nCurrent user:", file=ostrm)
+        print("-------------", file=ostrm)
+        print("Login: {login}".format(login=profile.name), file=ostrm)
+        print("\nBio:\n", file=ostrm)
+        print(profile.bio, file=ostrm)
 
     if args.communities:
         communities = lr.GetSubscribedCommunities()
 
         backupData["communities"] = []
 
-        print("\nSubscribed Communities:")
-        print("-----------------------")
+        print("\nSubscribed Communities:", file=ostrm)
+        print("-----------------------", file=ostrm)
         HDR = "{title:^40.40} | {id:^7} | {url:^40}".format(title="TITLE", id="ID", url="URL")
         FMT = "{title:40.40} | {id:>7} | {url:40}"
-        print(HDR)
+        print(HDR, file=ostrm)
         for c in communities:
             backupData["communities"].append({"id": c.id, "actor_id": c.actor_id, "title": c.title})
-            print(FMT.format(id=c.id, url=c.actor_id, title=c.title))
+            print(FMT.format(id=c.id, url=c.actor_id, title=c.title), file=ostrm)
 
     if args.export:
         with open(args.export, "w") as exportFile:

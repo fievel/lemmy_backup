@@ -1,10 +1,11 @@
 # lemmy_backup
 A script to backup from one lemmy instance to a file.
 
-Version 0.1 support only serialization of communities from one instance to a
-file, in the future I plan to add the ability to import the file into another
-instance (i.e. subscribing to the saved communities). I also plan to support
-backup of other data depending on what is available through Lemmy API.
+Version 0.1 support only serialization of communities and user biography from
+one instance to a file, in the future I plan to add the ability to import the
+file into another instance (i.e. subscribing to the saved communities). I also
+plan to support backup of other data depending on what is available through
+Lemmy API.
 
 ## Dependencies
 
@@ -14,7 +15,7 @@ for details on how to install it.
 ## Usage
 
 ```
-usage: lemmybackup.py [-h] [-e EXPORT] [--communities] [--profile] instance username password
+usage: lemmybackup.py [-h] [-e EXPORT] [-q] [--communities] [--profile] instance username password
 
 Allows to backup various lemmy data, like subscribed communities. Output on stdout in human-readable format. Use --export option to generate a json file.
 
@@ -27,6 +28,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -e EXPORT, --export EXPORT
                         Export data to file. Location must be write-able.
+  -q, --quiet           Do not output on console
 
 Backup Data:
   Data to backup (if none specified, all will be saved)
